@@ -1,9 +1,11 @@
-from .principled_bsdf import PrincipledBSDFNode
+"""
+nodes/__init__.py
+Registry for supported nodes.
+"""
 from .image_texture import ImageTextureNode
-from .normal_map import NormalMapNode
+from .principled_bsdf import PrincipledBSDFNode
 
-NODE_REGISTRY = {
-    "PrincipledBSDF": PrincipledBSDFNode,
-    "ImageTexture": ImageTextureNode,
-    "NormalMap": NormalMapNode,
+registry = {
+    "Image Texture": ImageTextureNode,
+    "Principled BSDF": PrincipledBSDFNode,
 }
