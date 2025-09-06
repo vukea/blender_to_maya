@@ -1,17 +1,11 @@
-from abc import ABC, abstractmethod
+"""
+base_node.py
+Abstract base class for node builders.
+"""
 
-class BaseNode(ABC):
-    def __init__(self, name, data):
-        self.name = name
-        self.data = data
-        self.node = None
+class BaseNode:
+    def _unique_name(self, base, material_name=None):
+        return "{}_{}".format(material_name, base) if material_name else base
 
-    @abstractmethod
-    def create(self):
-        """Create the node in Maya"""
-        pass
-
-    @abstractmethod
-    def connect(self, target_attr):
-        """Connect this node to a target attribute"""
-        pass
+    def build(self, node_json, desired_attribute=None, material_name=None):
+        raise NotImplementedError
