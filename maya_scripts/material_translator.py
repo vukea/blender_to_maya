@@ -1,55 +1,50 @@
-"""
-material_translator.py
-Orchestrates reading Blender-exported JSON and building materials in Maya.
-"""
+# maya_scripts/material_translator.py
 
 import os
 import json
-import sys
+import importlib
 
-try:
-    import maya.cmds as cmds
-except ImportError:
-    raise RuntimeError("This script must be run inside Maya (maya.cmds not available).")
+import maya.cmds as cmds
 
-from material_builder import MaterialBuilder
-
-DEFAULT_JSON_PATH = r"C:\Users\Mpho\Desktop\blender_to_maya\to_maya\test_scene.json"
+# --- Import material builder ---
+import material_builder
+importlib.reload(material_builder)  # force reload during dev
 
 
-def load_json(path):
-    if not os.path.exists(path):
-        raise FileNotFoundError("JSON file not found: {}".format(path))
-    with open(path, "r") as f:
-        return json.load(f)
+def load_json(json_path):
+    """Load and return material data from a JSON file."""
+    if not os.path.exists(json_path):
+        raise FileNotFoundError(f"JSON file not found: {json_path}")
+
+    with open(json_path, "r") as f:
+        data = json.load(f)
+    return data
 
 
-def main(json_path=None):
-    json_path = json_path or DEFAULT_JSON_PATH
-    print("Material translator starting. Loading JSON:", json_path)
-
+def main(json_path):
+    """Main entry point: reads JSON and builds materials in Maya."""
     try:
-        data = load_json(json_path)
+        materials = load_json(json_path)
     except Exception as e:
-        print("Failed to load JSON:", e)
+        print(f"[Translator] ❌ Failed to load JSON: {e}")
         return
 
-    builder = MaterialBuilder()
-    materials_built = []
+    print(f"[Translator] ✅ Loaded materials JSON: {json_path}")
 
-    for mat_name, mat_data in data.items():
+    for mat_name, mat_data in materials.items():
         try:
-            print("\n--- Building material: '{}' ---".format(mat_name))
-            builder.build_material(mat_name, mat_data)
-            materials_built.append(mat_name)
-            print("SUCCESS:", mat_name)
+            print(f"\n[Translator] 🔧 Building material: {mat_name}")
+            material_builder.build_material(mat_name, mat_data)
         except Exception as e:
-            print("ERROR: Failed to build '{}': {}".format(mat_name, e))
-
-    print("\nFinished. Materials built:", materials_built)
-    return materials_built
+            print(f"[Translator] ❌ Error building {mat_name}: {e}")
 
 
+# --- Allow direct execution inside Maya Script Editor ---
 if __name__ == "__main__":
-    arg_path = sys.argv[-1] if len(sys.argv) > 1 else None
-    main(arg_path)
+    # Change this to your JSON path
+    test_json = r"C:\Users\Mpho\Desktop\blender_to_maya\to_maya\test_scene.json"
+
+    if os.path.exists(test_json):
+        main(test_json)
+    else:
+        print(f"[Translator] ⚠ Test JSON path not found: {test_json}")
