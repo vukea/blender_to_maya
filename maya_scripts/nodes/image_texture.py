@@ -1,30 +1,37 @@
+"""
+image_texture.py
+Builds file + place2dTexture nodes for Image Texture.
+"""
 import maya.cmds as cmds
+import os
 from .base_node import BaseNode
 
+
 class ImageTextureNode(BaseNode):
-    def create(self):
-        file_path = self.data.get("file_path")
+    def build(self, node_json, desired_attribute=None, material_name=None):
+        file_path = node_json.get("file_path")
         if not file_path:
-            print(f"Warning: No file path for image texture {self.name}")
+            print("ImageTextureNode: no file_path in JSON.")
             return None
 
-        if not cmds.objExists(self.name):
-            self.node = cmds.shadingNode('file', asTexture=True, isColorManaged=True, name=self.name)
-            cmds.setAttr(f"{self.node}.fileTextureName", file_path, type="string")
-        else:
-            self.node = self.name
+        file_path = os.path.normpath(file_path)
 
-        # Create a place2dTexture node
-        p2d = f"{self.name}_place2d"
-        if not cmds.objExists(p2d):
-            place2d = cmds.shadingNode('place2dTexture', asUtility=True, name=p2d)
-            cmds.connectAttr(f"{place2d}.outUV", f"{self.node}.uvCoord")
-            cmds.connectAttr(f"{place2d}.outUvFilterSize", f"{self.node}.uvFilterSize")
-        return self.node
+        place2d = cmds.shadingNode("place2dTexture", asUtility=True, name=self._unique_name("place2d", material_name))
+        file_node = cmds.shadingNode("file", asTexture=True, name=self._unique_name("fileTex", material_name))
 
-    def connect(self, target_attr):
-        if self.node:
+        # connect common attrs
+        for attr in ["coverage", "translateFrame", "rotateFrame", "mirrorU", "mirrorV",
+                     "stagger", "wrapU", "wrapV", "repeatUV", "offset", "rotateUV", "noiseUV"]:
             try:
-                cmds.connectAttr(f"{self.node}.outColor", target_attr, force=True)
-            except Exception as e:
-                print(f"Warning: Could not connect {self.node} to {target_attr}: {e}")
+                cmds.connectAttr(place2d + "." + attr, file_node + "." + attr, f=True)
+            except:
+                pass
+        cmds.connectAttr(place2d + ".outUV", file_node + ".uvCoord", f=True)
+
+        cmds.setAttr(file_node + ".fileTextureName", file_path, type="string")
+
+        # decide output plug
+        if desired_attribute and "color" in desired_attribute.lower():
+            return file_node + ".outColor"
+        else:
+            return file_node + ".outColorR"
