@@ -1,10 +1,7 @@
 # blender_to_maya
 
-maya_scripts/
-  material_translator.py
-  material_builder.py
-  nodes/
-    __init__.py
-    base_node.py
-    principled_bsdf.py
-    image_texture.py
+import sys
+sys.path.append(r"C:\path\to\maya_scripts")
+
+import material_translator
+material_translator.main(r"C:\Users\Mpho\Desktop\blender_to_maya\to_maya\test_scene.json")
