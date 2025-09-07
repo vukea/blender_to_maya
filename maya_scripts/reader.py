@@ -1,19 +1,43 @@
-import json
+import sys
 import os
+import json
+import importlib
+
+# --- Path setup ---
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))   # maya_scripts
+NODES_DIR = os.path.join(BASE_DIR, "nodes")
+
+if BASE_DIR not in sys.path:
+    sys.path.append(BASE_DIR)
+if NODES_DIR not in sys.path:
+    sys.path.append(NODES_DIR)
+
+# Import dispatcher and nodes
+import dispatcher
+import nodes.principled_bsdf
+import nodes.image_texture
+import nodes.mix_shader
+
+# --- Reload modules for development ---
+importlib.reload(dispatcher)
+importlib.reload(nodes.principled_bsdf)
+importlib.reload(nodes.image_texture)
+importlib.reload(nodes.mix_shader)
+
 from dispatcher import dispatch_node
 
+
 def read_material(material_name, material_data):
-    """Read a single material and pass it to dispatcher"""
+    """Read a single material entry from JSON and create its node(s)."""
     shader_type = material_data.get("shader")
     print(f"\n=== Reading material: {material_name} ({shader_type}) ===")
     return dispatch_node(shader_type, material_data)
 
-if __name__ == "__main__":
-    # Your JSON path
-    json_path = r"C:\Users\Mpho\Desktop\blender_to_maya\to_maya\test_scene.json"
 
+def read_scene(json_path):
+    """Load a JSON scene file and process all materials."""
     if not os.path.exists(json_path):
-        raise FileNotFoundError(f"JSON file not found: {json_path}")
+        raise FileNotFoundError(f"JSON not found: {json_path}")
 
     with open(json_path, "r") as f:
         materials = json.load(f)
