@@ -12,18 +12,9 @@ if BASE_DIR not in sys.path:
 if NODES_DIR not in sys.path:
     sys.path.append(NODES_DIR)
 
-# Import dispatcher and nodes
+# Import dispatcher (no circular import now)
 import dispatcher
-import nodes.principled_bsdf
-import nodes.image_texture
-import nodes.mix_shader
-
-# --- Reload modules for development ---
 importlib.reload(dispatcher)
-importlib.reload(nodes.principled_bsdf)
-importlib.reload(nodes.image_texture)
-importlib.reload(nodes.mix_shader)
-
 from dispatcher import dispatch_node
 
 
