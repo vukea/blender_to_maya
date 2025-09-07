@@ -1,10 +1,15 @@
-# blender_to_maya
-
 import sys
-sys.path.append(r"C:\Users\Mpho\Desktop\blender_to_maya\maya_scripts")
-
 import importlib
-import material_translator
-importlib.reload(material_translator)  # refresh if you edit code
 
-material_translator.main(r"C:\Users\Mpho\Desktop\blender_to_maya\to_maya\test_scene.json")
+# Add your scripts folder
+sys.path.append(r"C:\Users\Mpho\Documents\blender_to_maya\blender_to_maya\maya_scripts")
+
+# Import (or reload) reader
+import reader
+importlib.reload(reader)
+
+# Set JSON path manually
+json_path = r"C:\Users\Mpho\Desktop\blender_to_maya\to_maya\test_scene.json"
+
+# Run the scene reader
+reader.read_scene(json_path)
