@@ -15,35 +15,55 @@ INPUTS = {
     # Normal map will be handled later
 }
 
-def create(data):
-    """Create an aiStandardSurface node and set attributes"""
-    node = cmds.shadingNode("aiStandardSurface", asShader=True)
-    print(f" → Created {node} (Principled BSDF)")
+def create(node_data):
+    # Create aiStandardSurface
+    shader = cmds.shadingNode("aiStandardSurface", asShader=True)
+    print(f" → Created {shader} (Principled BSDF)")
 
-    channels = data.get("channels", {})
-    for slot, maya_attr in INPUTS.items():
-        if slot not in channels:
-            continue
+    channels = node_data.get("channels", {})
 
-        slot_data = channels[slot]
-        source_type = slot_data.get("source_type")
+    for slot, info in channels.items():
+        if info.get("source_type") == "default":
+            val = info.get("value")
 
-        # Default slot values → setAttr
-        if source_type == "default":
-            value = slot_data.get("value")
+            # Handle slot mapping
+            if slot == "Base Color":
+                cmds.setAttr(f"{shader}.baseColor", *val, type="double3")
+                print(f"    baseColor = {val}")
 
-            if isinstance(value, list):  # e.g. colors (RGB)
-                cmds.setAttr(f"{node}.{maya_attr}", *value, type="double3")
-            else:  # scalar values
-                cmds.setAttr(f"{node}.{maya_attr}", value)
+            elif slot == "Roughness":
+                cmds.setAttr(f"{shader}.specularRoughness", val)
+                print(f"    specularRoughness = {val}")
 
-            print(f"    {maya_attr} = {value}")
+            elif slot == "Metallic":
+                cmds.setAttr(f"{shader}.metalness", val)
+                print(f"    metalness = {val}")
 
-        # Node slot → recursive dispatch
-        elif source_type == "node":
-            sub_type = slot_data.get("node_type")
-            print(f"    {slot} is a node → dispatching {sub_type}")
-            sub_node = dispatch_node(sub_type, slot_data)
-            # connections will be handled later
+            elif slot == "Alpha":
+                cmds.setAttr(f"{shader}.opacity", val, val, val, type="double3")
+                print(f"    opacity = {val}")
 
-    return node
+            elif slot == "Subsurface Weight":
+                cmds.setAttr(f"{shader}.subsurface", val)
+                print(f"    subsurface = {val}")
+
+            elif slot == "Subsurface Radius":
+                r, g, b = val
+                cmds.setAttr(f"{shader}.subsurfaceRadiusR", r)
+                cmds.setAttr(f"{shader}.subsurfaceRadiusG", g)
+                cmds.setAttr(f"{shader}.subsurfaceRadiusB", b)
+                print(f"    subsurfaceRadius = {val}")
+
+            elif slot == "Transmission Weight":
+                cmds.setAttr(f"{shader}.transmission", val)
+                print(f"    transmission = {val}")
+
+            elif slot == "Emission Color":
+                cmds.setAttr(f"{shader}.emissionColor", *val, type="double3")
+                print(f"    emissionColor = {val}")
+
+            elif slot == "Emission Strength":
+                cmds.setAttr(f"{shader}.emission", val)
+                print(f"    emission = {val}")
+
+    return shader
