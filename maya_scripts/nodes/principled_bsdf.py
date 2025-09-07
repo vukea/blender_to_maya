@@ -1,24 +1,19 @@
 import maya.cmds as cmds
-from dispatcher import dispatch_node
 
-# Map Blender inputs → Arnold aiStandardSurface attributes
-INPUTS = {
-    "Base Color": "baseColor",
-    "Roughness": "specularRoughness",
-    "Metallic": "metalness",
-    "Alpha": "opacity",
-    "Subsurface Weight": "subsurface",
-    "Subsurface Radius": "subsurfaceRadius",
-    "Transmission Weight": "transmission",
-    "Emission Color": "emissionColor",
-    "Emission Strength": "emissionStrength",
-    # Normal map will be handled later
-}
+def create(material_name, node_data):
+    """
+    Create or update a Principled BSDF (aiStandardSurface) shader in Maya.
+    - If material_name exists: reuse it.
+    - Else: create a new aiStandardSurface with that name.
+    """
 
-def create(node_data):
-    # Create aiStandardSurface
-    shader = cmds.shadingNode("aiStandardSurface", asShader=True)
-    print(f" → Created {shader} (Principled BSDF)")
+    # Check if shader exists
+    if cmds.objExists(material_name):
+        shader = material_name
+        print(f" → Reusing existing {shader} (Principled BSDF)")
+    else:
+        shader = cmds.shadingNode("aiStandardSurface", asShader=True, name=material_name)
+        print(f" → Created new {shader} (Principled BSDF)")
 
     channels = node_data.get("channels", {})
 
@@ -26,7 +21,6 @@ def create(node_data):
         if info.get("source_type") == "default":
             val = info.get("value")
 
-            # Handle slot mapping
             if slot == "Base Color":
                 cmds.setAttr(f"{shader}.baseColor", *val, type="double3")
                 print(f"    baseColor = {val}")
