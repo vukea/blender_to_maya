@@ -1,19 +1,17 @@
 import importlib
 
-# Map node types to their module names
 NODE_MAP = {
-    "Principled BSDF": "nodes.principled_bsdf",
-    "Image Texture": "nodes.image_texture",
-    "Mix Shader": "nodes.mix_shader",
+    "Principled BSDF": "principled_bsdf",
+    "Image Texture": "image_texture",
+    # add more nodes as needed
 }
 
-def dispatch_node(node_type, node_data):
-    """Load the correct node module and run its create() method."""
-    module_name = NODE_MAP.get(node_type)
-    if not module_name:
-        print(f"[Dispatcher] No module mapped for node type: {node_type}")
+def dispatch_node(shader_type, material_name, node_data):
+    if shader_type in NODE_MAP:
+        module_name = NODE_MAP[shader_type]
+        module = importlib.import_module(module_name)
+        importlib.reload(module)
+        return module.create(material_name, node_data)
+    else:
+        print(f"⚠️ Unknown shader type: {shader_type}")
         return None
-
-    module = importlib.import_module(module_name)
-    importlib.reload(module)  # ensure latest changes are picked up
-    return module.create(node_data)
