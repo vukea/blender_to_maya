@@ -19,10 +19,10 @@ from dispatcher import dispatch_node
 
 
 def read_material(material_name, material_data):
-    """Read a single material entry from JSON and create its node(s)."""
     shader_type = material_data.get("shader")
     print(f"\n=== Reading material: {material_name} ({shader_type}) ===")
-    return dispatch_node(shader_type, material_data)
+    return dispatch_node(shader_type, material_name, material_data)
+
 
 
 def read_scene(json_path):
